@@ -23,7 +23,7 @@ class MutiViewAutoencoder():
     '''
       This is the implementation of the Multi-View autoencoder
     '''
-    def __init__(self,data1, data2, data3, n_hiddensh=1, activation=tf.nn.relu):
+    def __init__(self,data1, data2, data3, n_hiddensh=1, activation=tf.nn.tanh):
 
         # training datasets
         self.training_data1 = data1
@@ -162,17 +162,16 @@ class MutiViewAutoencoder():
         self.get_weights()
 
         # Sparse group lasso
-        sgroup_lasso = self.L2regularization(self.W1,self.n_input1* self.n_hidden1) + self.L2regularization(self.W2,self.n_input2*self.n_hidden2) + self.L2regularization(self.W3,self.n_input3*self.n_hidden3)
+        #sgroup_lasso = self.L2regularization(self.W1,self.n_input1* self.n_hidden1) + self.L2regularization(self.W2,self.n_input2*self.n_hidden2) + self.L2regularization(self.W3,self.n_input3*self.n_hidden3)
 
         #Lasso
-        lasso = self.L1regularization(self.W1) + self.L1regularization(self.W2) + self.L1regularization(self.W3) \
-                       +self.L1regularization(self.Wsh)+ self.L1regularization(self.Wsht)\
-                       + self.L1regularization(self.W1t) + self.L1regularization(self.W2t) + self.L1regularization(self.W3t)
+        #lasso = self.L1regularization(self.W1) + self.L1regularization(self.W2) + self.L1regularization(self.W3) \
+        #               +self.L1regularization(self.Wsh)+ self.L1regularization(self.Wsht)\
+        #               + self.L1regularization(self.W1t) + self.L1regularization(self.W2t) + self.L1regularization(self.W3t)
         #Reconstruction Error
         error = tf.losses.mean_squared_error(Y1,X1_) +tf.losses.mean_squared_error(Y2,X2_) +tf.losses.mean_squared_error(Y3,X3_)
         # Loss function
-        cost= 0.5*error+ 0.5*self.lamda*(1-self.alpha)*sgroup_lasso+ 0.5*self.lamda*self.alpha*lasso
-
+        cost= error
         return cost
 
 
@@ -322,8 +321,8 @@ class MutiViewAutoencoder():
         self.n_hidden3=params['units3']
 #        self.n_hiddensh=params['units4']
         self.n_hiddensh= int(( self.n_hidden1+ self.n_hidden2+ self.n_hidden3)/3)
-        self.alpha=params['alpha']
-        self.lamda=params['lamda']
+        self.alpha=0
+        self.lamda=0
         self.kp=params['keep_prob']
         self.learning_rate=params['learning_rate']
         self.require_improvement= 50
@@ -412,7 +411,7 @@ class MutiViewAutoencoder():
 
 if __name__=='__main__':
 
-#    
+##    
 #    selected_features=np.genfromtxt('E:/Work3/Selected_Features_NCI_GBM.csv', delimiter =',',skip_header =1)
 #    inputge=np.genfromtxt('E:/newflder/data/mydatGE_GBM.csv',dtype  = np.unicode_, delimiter =',',skip_header =1)
 #    inputcnv=np.genfromtxt('E:/newflder/data/mydatME_GBM.csv',dtype  = np.unicode_, delimiter =',',skip_header =1)
@@ -421,15 +420,15 @@ if __name__=='__main__':
 #    inputcnv = inputcnv[:,1:inputcnv.shape[1]].astype(np.float)
 #    inputge = inputge[:,1:inputge.shape[1]].astype(np.float)
 #    inputmiRNA = inputmiRNA[:,1:inputmiRNA.shape[1]].astype(np.float)
-    
+#    
     with open('E:/newflder/data/pathnames.csv', 'r', encoding="ascii", errors="surrogateescape" ) as f:
           pathnames = f.readlines()
-    act = tf.nn.relu
+    act = tf.nn.tanh
     ii=0
-  #  fname = 'E:/newflder/autre pc/trials_HPMV_maxepochs1000_max_evals50_relu.pkl'
-    fname = 'E:/Work3/GBM_trials_HPMV8evals50_reluu.pkl'
+  #  fname = 'E:/newflder/autre pc/trials_HPMV_maxepochs1000_max_evals50_tanh.pkl'
+    fname = 'E:/Work3/GBM_trials_HPMV8evals500_tanhu.pkl'
   
-#    fname = 'H:/Nouveau dossier (3)/autre pc/coadpins/coadp_trials_HPMV_maxepochs1000_max_evals50_relu4.pkl'
+#    fname = 'H:/Nouveau dossier (3)/autre pc/coadpins/coadp_trials_HPMV_maxepochs1000_max_evals50_tanh4.pkl'
     namege= np.genfromtxt('E:/newflder/data/namege_gbm.csv',dtype  = np.unicode_, delimiter =',',skip_header =1)
     nameme= np.genfromtxt('E:/newflder/data/nameme_gbm.csv', dtype  = np.unicode_, delimiter =',',skip_header =1)
     namemi= np.genfromtxt('E:/newflder/data/namemi_gbm.csv', dtype  = np.unicode_, delimiter =',',skip_header =1)
@@ -543,14 +542,14 @@ if __name__=='__main__':
           del(sae)    
           shapfeat = best_shapfeat
           
-          fname = './SHAPValues.pkl'
+          fname = './SHAPValuesV2.pkl'
           pickle.dump(shapfeat,open( fname, "wb" ))       
-          with open('./MVgbm_relu.csv', 'w') as csvfile:
+          with open('./MVgbm_tanhV2.csv', 'w') as csvfile:
                   writer = csv.writer(csvfile)
                   [writer.writerow(r) for r in pt_path_scores]   
-#          mrna = './coadfeat/MVcoad_relumrnap'+str(iterators)+'.csv'
-#          cnv = './coadfeat/MVcoad_relucnvp'+str(iterators)+'.csv'
-#          mirna = './coadfeat/MVcoad_relumirnap'+str(iterators)+'.csv'
+#          mrna = './coadfeat/MVcoad_tanhmrnap'+str(iterators)+'.csv'
+#          cnv = './coadfeat/MVcoad_tanhcnvp'+str(iterators)+'.csv'
+#          mirna = './coadfeat/MVcoad_tanhmirnap'+str(iterators)+'.csv'
           
 
           
@@ -565,6 +564,6 @@ if __name__=='__main__':
 #          with open(mirna, 'w') as csvfile:
 #                  writer = csv.writer(csvfile)
 #                  writer.writerow( resmi )
-          with open('./MVrelushap.csv', 'w') as csvfile:
+          with open('./MVtanhshapV2.csv', 'w') as csvfile:
                   writer = csv.writer(csvfile)
                   writer.writerow( ts )
